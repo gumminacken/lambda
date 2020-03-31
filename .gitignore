@@ -1,1 +1,4 @@
 thirdparty
+build
+.ccls-cache
+run.sh
