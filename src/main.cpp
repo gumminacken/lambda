@@ -2,37 +2,31 @@
 
 int main(int argc, char *argv[]) {
     AiBegin();
-    AiMsgInfo("Hello, world.");
+
+
+    AiASSLoad("scenes/cornell.ass");
+    AtNode *options = AiUniverseGetOptions();
 
     AiRender(AI_RENDER_MODE_FREE);
 
-    AtUniverse *universe = AiUniverse();
-    AiASSLoad(universe, "scenes/cornell.ass");
-
-    AtShaderGlobals * sg = AiShaderGlobals();
-
-    AtNode *cam = AiUniverseGetCamera(universe);
+    AtNode *cam = AiUniverseGetCamera();
 
     AtMatrix mat = AiNodeGetMatrix(cam, "matrix");
 
-    AiMsgInfo("matrix: %g", mat.data[1][0]);
-
-    AtVector origin = AtVector(0, 0, 0);
+    AtVector origin = AtVector(0, 0, 8);
     AiM4PointByMatrixMult(mat, origin);
 
-    AtVector direction = AtVector(0, 0, -1);
+    AtVector direction = AtVector(-1, 0, -1);
     AiM4VectorByMatrixMult(mat, direction);
 
-    AtRay ray = AiMakeRay(AI_RAY_CAMERA, origin, &direction, 1000, sg);
+    AtShaderGlobals *startsg = AiShaderGlobals();
+    AtRay ray = AiMakeRay(AI_RAY_CAMERA, origin, &direction, AI_BIG, startsg);
 
-    AtScrSample sample = {};
-    AiTrace(ray, AtRGB(1, 1, 1), sample);
+    AtShaderGlobals *sg = AiShaderGlobals();
+    bool hit = AiTraceProbe(ray, sg);
 
-    AiMsgInfo("origin: %g, %g, %g", origin.x, origin.y, origin.z);
-    AiMsgInfo("direction: %g, %g, %g", direction.x, direction.y, direction.z);
-
-    AtString name = AiNodeGetStr(cam, "name");
-    AiMsgInfo("%s", name.c_str());
+    AiMsgInfo("Hit something? %d", hit);
+    AiMsgInfo("Hit %s at position %g, %g, %g", AiNodeGetName(sg->Op), sg->P.x, sg->P.y, sg->P.z);
 
     AiRenderEnd();
 
