@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
     AiRender(AI_RENDER_MODE_FREE);
 
     AtUniverse *universe = AiUniverse();
-    AiASSLoad(universe, "/home/albusde/Downloads/cornell.ass");
+    AiASSLoad(universe, "scenes/cornell.ass");
 
     AtShaderGlobals * sg = AiShaderGlobals();
 
