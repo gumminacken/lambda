@@ -2,3 +2,6 @@ thirdparty
 build
 .ccls-cache
 run.*
+*.jpg
+*.code-workspace
+*.exe
