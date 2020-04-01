@@ -127,6 +127,7 @@ polymesh
 
 sphere
 {
+ name pymelle
  shader pimp
  radius 1
  center 0 -1 0
