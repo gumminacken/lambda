@@ -1,35 +1,34 @@
 #include "../thirdparty/Arnold/include/ai.h"
 
-int main(int argc, char *argv[]) {
+int main() {
     AiBegin();
-
-
+    
+    AiMsgInfo("Entered the Universe!!");
     AiASSLoad("scenes/cornell.ass");
+    
     AtNode *options = AiUniverseGetOptions();
+    AiNodeSetBool(options, "skip_license_check", true);
 
-    AiRender(AI_RENDER_MODE_FREE);
-
-    AtNode *cam = AiUniverseGetCamera();
-
-    AtMatrix mat = AiNodeGetMatrix(cam, "matrix");
 
     AtVector origin = AtVector(0, 0, 8);
-    AiM4PointByMatrixMult(mat, origin);
+    AtVector direction = AtVector(0, -0.01, -1);
+    AtShaderGlobals *initial_globals = AiShaderGlobals();
 
-    AtVector direction = AtVector(-1, 0, -1);
-    AiM4VectorByMatrixMult(mat, direction);
+    AtRay ray = AiMakeRay(AI_RAY_CAMERA, origin, &direction, AI_BIG, initial_globals);
+    
+    AtShaderGlobals *trace_globals = AiShaderGlobals();
+    bool hit = AiTraceProbe(ray, trace_globals);
 
-    AtShaderGlobals *startsg = AiShaderGlobals();
-    AtRay ray = AiMakeRay(AI_RAY_CAMERA, origin, &direction, AI_BIG, startsg);
-
-    AtShaderGlobals *sg = AiShaderGlobals();
-    bool hit = AiTraceProbe(ray, sg);
-
-    AiMsgInfo("Hit something? %d", hit);
-    AiMsgInfo("Hit %s at position %g, %g, %g", AiNodeGetName(sg->Op), sg->P.x, sg->P.y, sg->P.z);
+    if (hit) {
+        AiMsgInfo("We have a hit at %g %g %g", trace_globals->P.x, trace_globals->P.y, trace_globals->P.z );
+        AtNode *hitobj = trace_globals->Op;
+        AiMsgInfo("Object: %s", AiNodeGetName(hitobj));
+        AiMsgInfo("Shader: %s", AiNodeGetName((AtNode *)AiNodeGetPtr(hitobj, "shader")));
+    } else {
+        AiMsgInfo("Oh vey - no hit. Try again!");
+    } 
 
     AiRenderEnd();
-
     AiEnd();
     return 0;
 }
