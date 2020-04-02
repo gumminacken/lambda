@@ -1,0 +1,31 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "linux": {
+                "command": "clang",
+                "args": [
+                    "./src/main.cpp",
+                    "-std=c++14",
+                    "-lm",
+                     "-lstdc++",
+                    "-I./thirdparty/Arnold/include",
+                    "-L./thirdparty/Arnold/bin",
+                     "-lai",
+                    "-o./build/lambda"
+                ],
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
