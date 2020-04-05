@@ -19,6 +19,9 @@
                     "-o./build/lambda"
                 ],
             },
+            "windows": {
+                "command": "./build.bat",
+            },
             "options": {
                 "cwd": "${workspaceRoot}"
             },
