@@ -27,6 +27,22 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "(vsdb) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/lambda",
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "./thirdparty/arnold_windows/bin"
+                }
+            ],
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "externalConsole": false
         }
     ]
 }
