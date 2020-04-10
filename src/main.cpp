@@ -1,4 +1,9 @@
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+
 #include "../thirdparty/arnold_linux/include/ai.h"
+#include "../thirdparty/stb/stb_image_write.h"
+#include "../thirdparty/stb/stb_image.h"
 
 int main() {
     AiBegin();
@@ -50,7 +55,22 @@ int main() {
         AiMsgInfo("Shader: %s", AiNodeGetName((AtNode *)AiNodeGetPtr(hitobj, "shader")));
     } else {
         AiMsgInfo("Oh vey - no hit. Try again!");
-    } 
+    }
+
+    int w = 640;
+    int h = 480;
+    uint8_t *buffer = (uint8_t *)malloc(w * h * 3 *sizeof(char));
+    uint8_t *curr = buffer;
+    for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x) {
+            *curr = ((float)y / h) * 255;
+            *(curr + 1) = ((float)x / w) * 255;
+            *(curr + 2) = 0;
+            curr += 3;
+        }
+    }
+
+    stbi_write_jpg("test.jpg", 640, 480, 3, buffer, 90);
 
     AiRenderEnd();
     AiEnd();
