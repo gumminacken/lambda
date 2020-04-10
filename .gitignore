@@ -1,4 +1,5 @@
-thirdparty
+thirdparty/*
+!thirdparty/stb
 build
 .ccls-cache
 run.*
