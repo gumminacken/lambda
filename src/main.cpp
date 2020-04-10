@@ -1,4 +1,4 @@
-#include "../thirdparty/Arnold/include/ai.h"
+#include "../thirdparty/arnold_linux/include/ai.h"
 
 int main() {
     AiBegin();
