@@ -1,7 +1,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 
-#include "../thirdparty/arnold_linux/include/ai.h"
+//#include "../thirdparty/arnold_linux/include/ai.h"
+#include "ai.h"
 #include "../thirdparty/stb/stb_image_write.h"
 #include "../thirdparty/stb/stb_image.h"
 
