@@ -40,23 +40,19 @@ int main() {
     AiOutputIteratorGetNext(NULL, &output_name, &output_type, pixeldata);
     */
 
-    AtVector origin = AtVector(0, 0, 8);
-    AtVector direction = AtVector(0, -0.01, -1);
-    AtShaderGlobals *initial_globals = AiShaderGlobals();
+    // TODO: Use an actual camera to create proper rays
+    // TODO: Use a sampler to generate better subpixel samples
+    /*
+    AtNode *cam = AiUniverseGetCamera();
+    AtCameraInput in;
+    AtCameraOutput out;
+    AtCameraNodeMethods cam_methods;
 
-    AtRay ray = AiMakeRay(AI_RAY_CAMERA, origin, &direction, AI_BIG, initial_globals);
-    
-    AtShaderGlobals *trace_globals = AiShaderGlobals();
-    bool hit = AiTraceProbe(ray, trace_globals);
+    auto camray = cam_methods.CreateRay(cam, in, out, 0);
+    */
 
-    if (hit) {
-        AiMsgInfo("We have a hit at %g %g %g", trace_globals->P.x, trace_globals->P.y, trace_globals->P.z );
-        AtNode *hitobj = trace_globals->Op;
-        AiMsgInfo("Object: %s", AiNodeGetName(hitobj));
-        AiMsgInfo("Shader: %s", AiNodeGetName((AtNode *)AiNodeGetPtr(hitobj, "shader")));
-    } else {
-        AiMsgInfo("Oh vey - no hit. Try again!");
-    }
+    AtVector origin = AtVector(0, 5, 10);
+    bool hit = false;
 
     int w = 640;
     int h = 480;
@@ -64,14 +60,33 @@ int main() {
     uint8_t *curr = buffer;
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
-            *curr = ((float)y / h) * 255;
-            *(curr + 1) = ((float)x / w) * 255;
-            *(curr + 2) = 0;
+            AtVector direction = AtVector(
+                1 - (((float)x / w) * 2),
+                1 - (((float)y / h) * 2),
+                -1
+            );
+            AiV3Normalize(direction);
+            AtShaderGlobals *initial_globals = AiShaderGlobals();
+            AtRay ray = AiMakeRay(AI_RAY_CAMERA, origin, &direction, AI_BIG, initial_globals);
+            AtShaderGlobals *trace_globals = AiShaderGlobals();
+            hit = AiTraceProbe(ray, trace_globals);
+
+            AtVector color = trace_globals->Nf;
+
+            if (hit) {
+                *curr = color.x * 255;
+                *(curr + 1) = color.y * 255;
+                *(curr + 2) = color.z * 255;
+            } else {
+                *curr = 0;
+                *(curr + 1) = 0;
+                *(curr + 2) = 0;
+            }
             curr += 3;
         }
     }
 
-    stbi_write_jpg("test.jpg", 640, 480, 3, buffer, 90);
+    stbi_write_jpg("test.jpg", w, h, 3, buffer, 90);
 
     AiRenderEnd();
     AiEnd();
