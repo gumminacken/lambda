@@ -19,10 +19,10 @@
                     "-lai",
                     "-g",
                     "-o./build/lambda"
-                ],
+                ]
             },
             "windows": {
-                "command": "./build.bat",
+                "command": "./build.bat"
             },
             "options": {
                 "cwd": "${workspaceRoot}"
