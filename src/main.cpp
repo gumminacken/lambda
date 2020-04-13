@@ -48,43 +48,52 @@ int main() {
     (methods->CreateRay)(cam, in, out, 0);
     */
 
-
-    AtVector origin = AtVector(0, 5, 10);
-    bool hit = false;
-
     int w = 640;
     int h = 480;
-    uint8_t *buffer = (uint8_t *)malloc(w * h * 3 *sizeof(char));
+    int samples = 4;
+
+
+    AtSampler *sampler = AiSampler(12345, samples, 2);
+    AtShaderGlobals *sample_globals = AiShaderGlobals();
+
+    AtVector origin = AtVector(0, 5, 10);
+
+    // NOTE: Why is this not segfaulting if we deliberately choose a buffer that's too small?
+    uint8_t *buffer = (uint8_t *)malloc(w * h * 3 * sizeof(char));
     uint8_t *curr = buffer;
+
+
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
-            AtVector direction = AtVector(
-                1 - (((float)x / w) * 2),
-                1 - (((float)y / h) * 2),
-                -1
-            );
-            AiV3Normalize(direction);
-            AtShaderGlobals *initial_globals = AiShaderGlobals();
-            AtRay ray = AiMakeRay(AI_RAY_CAMERA, origin, &direction, AI_BIG, initial_globals);
-            AtShaderGlobals *trace_globals = AiShaderGlobals();
-            hit = AiTraceProbe(ray, trace_globals);
+            AtSamplerIterator *sampler_iter = AiSamplerIterator(sampler, sample_globals);
+            float sample[2] = {};
+            AtVector color = AtVector(0, 0, 0);
 
-            AtVector color = trace_globals->Nf;
+            while (AiSamplerGetSample(sampler_iter, sample)) {
+                AtVector direction = AtVector(
+                    1 - (((float)x / w) * 2) + (sample[0] / w),
+                    1 - (((float)y / h) * 2) + (sample[1] / h),
+                    -1
+                );
 
-            if (hit) {
-                *curr = color.x * 255;
-                *(curr + 1) = color.y * 255;
-                *(curr + 2) = color.z * 255;
-            } else {
-                *curr = 0;
-                *(curr + 1) = 0;
-                *(curr + 2) = 0;
+                AiV3Normalize(direction);
+                AtShaderGlobals *initial_globals = AiShaderGlobals();
+                AtRay ray = AiMakeRay(AI_RAY_CAMERA, origin, &direction, AI_BIG, initial_globals);
+                AtShaderGlobals *trace_globals = AiShaderGlobals();
+
+                bool hit = false;
+                hit = AiTraceProbe(ray, trace_globals);
+
+                color += trace_globals->N / samples;
             }
-            curr += 3;
+
+            *curr++ = (char)(color.x * 255);
+            *curr++ = (char)(color.y * 255);
+            *curr++ = (char)(color.z * 255);
         }
     }
 
-    stbi_write_jpg("test.jpg", w, h, 3, buffer, 90);
+    stbi_write_jpg("test.jpg", w, h, 3, buffer, 100);
 
     AiRenderEnd();
     AiEnd();
