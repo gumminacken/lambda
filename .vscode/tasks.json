@@ -14,6 +14,7 @@
                     "-lm",
                     "-lstdc++",
                     "-I./thirdparty/arnold_linux/include",
+                    "-I./thirdparty/stb",
                     "-L./thirdparty/arnold_linux/bin",
                     "-lai",
                     "-g",

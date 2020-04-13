@@ -1,10 +1,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
 
-//#include "../thirdparty/arnold_linux/include/ai.h"
-#include "ai.h"
-#include "../thirdparty/stb/stb_image_write.h"
-#include "../thirdparty/stb/stb_image.h"
+#include <ai.h>
+#include <stb_image_write.h>
 
 int main() {
     AiBegin();
@@ -44,12 +41,13 @@ int main() {
     // TODO: Use a sampler to generate better subpixel samples
     /*
     AtNode *cam = AiUniverseGetCamera();
-    AtCameraInput in;
-    AtCameraOutput out;
-    AtCameraNodeMethods cam_methods;
+    AtCameraInput in = {};
+    AtCameraOutput out = {};
 
-    auto camray = cam_methods.CreateRay(cam, in, out, 0);
+    AtCameraNodeMethods *methods = (AtCameraNodeMethods *)cam;
+    (methods->CreateRay)(cam, in, out, 0);
     */
+
 
     AtVector origin = AtVector(0, 5, 10);
     bool hit = false;

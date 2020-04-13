@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "intelliSenseMode": "clang-x64",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/thirdparty/arnold_linux/include",
+                "${workspaceFolder}/thirdparty/stb"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "browse": {
+            "path": ["${workspaceFolder}"],
+            "limitSymbolsToIncludedHeaders": true,
+            "databaseFilename": ""
+            }
+        },
+        {
+            "name": "Linux",
+            "intelliSenseMode": "clang-x64",
+            "includePath": ["${myDefaultIncludePath}"],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "browse": {
+            "path": ["${workspaceFolder}"],
+            "limitSymbolsToIncludedHeaders": true,
+            "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 4
+}
