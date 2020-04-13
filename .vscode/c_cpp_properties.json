@@ -8,7 +8,6 @@
                 "${workspaceFolder}/thirdparty/arnold_linux/include",
                 "${workspaceFolder}/thirdparty/stb"
             ],
-            "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "browse": {
@@ -18,10 +17,9 @@
             }
         },
         {
-            "name": "Linux",
-            "intelliSenseMode": "clang-x64",
+            "name": "Win32",
+            "intelliSenseMode": "msvc-x64",
             "includePath": ["${myDefaultIncludePath}"],
-            "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "browse": {
