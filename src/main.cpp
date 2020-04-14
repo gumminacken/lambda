@@ -12,11 +12,19 @@ struct Bucket {
     uint8_t *current_pixel;
 };
 
+void bucket_write(Bucket *bucket, uint8_t *buffer, int w, int bucket_size) {
+    for (int y = bucket->min[1], by = 0; y < bucket->max[1]; ++y, ++by) {
+        size_t buffer_offset = (y * w + bucket->min[0]) * 3;
+        size_t pixels_offset = by * bucket_size * 3;
+        memcpy(buffer + buffer_offset, bucket->pixels + pixels_offset, sizeof(char) * bucket_size * 3);
+    }
+}
+
 int main() {
     AiBegin();
     
     AiMsgInfo("Entered the Universe!!");
-    AiASSLoad("scenes/cornell.ass");
+    AiASSLoad("scenes/shaderball.ass");
     
     AtNode *options = AiUniverseGetOptions();
     AiNodeSetBool(options, "skip_license_check", true);
@@ -83,8 +91,7 @@ int main() {
                 *bucket.current_pixel++ = (char)(color.z * 255);
             }
         }
-        AiMsgInfo("YAY");
-        memcpy(buffer + bucket_index * (int)pow(bucket_size, 2), bucket.pixels, sizeof(char) * 3 * pow(bucket_size, 2));
+        bucket_write(&bucket, buffer, w, bucket_size);
     }
 
     stbi_write_jpg("test2.jpg", w, h, 3, buffer, 100);
