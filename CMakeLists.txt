@@ -1,5 +1,7 @@
 set(CMAKE_MINIMUM_REQUIRED_VERSION 3.0)
 
+cmake_policy(SET CMP0015 NEW)
+
 string(TOLOWER ${CMAKE_SYSTEM_NAME} PLATFORM)
 
 set(EMBREE_VERSION 3.9.0)
@@ -11,9 +13,8 @@ include_directories(
 )
 
 link_directories(
-    ../thirdparty/embree-${EMBREE_FLAVOUR}/lib
+    ./thirdparty/embree-${EMBREE_FLAVOUR}/lib
 )
-
 link_libraries(
     embree3
 )
