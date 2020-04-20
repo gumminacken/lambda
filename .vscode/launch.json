@@ -15,7 +15,7 @@
             "environment": [
                 {
                     "name": "LD_LIBRARY_PATH",
-                    "value": "./thirdparty/arnold_linux/bin"
+                    "value": "./thirdparty/embree-3.9.0.x86_64.linux/lib"
                 }
             ],
             "externalConsole": false,
@@ -36,7 +36,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "./thirdparty/embree_windows/bin"
+                    "value": "./thirdparty/embree-3.9.0.x86_64.windows/bin"
                 }
             ],
             "args": [],
