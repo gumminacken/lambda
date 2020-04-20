@@ -36,7 +36,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "./thirdparty/arnold_windows/bin"
+                    "value": "./thirdparty/embree_windows/bin"
                 }
             ],
             "args": [],
