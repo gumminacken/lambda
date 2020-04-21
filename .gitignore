@@ -2,6 +2,7 @@ thirdparty/*
 !thirdparty/stb
 build
 .ccls-cache
+compile_commands.json
 run.*
 *.jpg
 *.code-workspace
