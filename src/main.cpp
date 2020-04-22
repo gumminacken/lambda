@@ -13,7 +13,6 @@ int main(int argc, char* argv[]) {
     SDL_Window *window = SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 640, NULL);
 
     while (true) {
-
         SDL_Surface *surface = SDL_GetWindowSurface(window);
 
         char *curr = (char *)surface->pixels;
