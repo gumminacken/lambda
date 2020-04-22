@@ -1,10 +1,8 @@
-#include "rtcore.h"
+#include <stdio.h>
+#include "SDL.h"
 
-int main() {
-
-    RTCDevice device = rtcNewDevice("");
-    RTCScene scene = rtcNewScene(device);
-
-    RTCGeometry geo = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
+int main(int argc, char* argv[]) {
+    SDL_Init(SDL_INIT_VIDEO);
+    printf("hallo");
     return 0;
 }

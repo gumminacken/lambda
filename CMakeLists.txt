@@ -11,14 +11,17 @@ set(EMBREE_FLAVOUR ${EMBREE_VERSION}.x86_64.${PLATFORM})
 include_directories(
     ./thirdparty/stb
     ./thirdparty/embree-${EMBREE_FLAVOUR}/include/embree3
+    ./thirdparty/sdl2-2.12/include
 )
 
 link_directories(
     ./thirdparty/embree-${EMBREE_FLAVOUR}/lib
+    ./thirdparty/sdl2-2.12/lib
 )
 
 link_libraries(
     embree3
+    SDL2-2.0d
 )
 
 add_executable(lambda src/main.cpp)
