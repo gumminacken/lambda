@@ -16,12 +16,13 @@ include_directories(
 
 link_directories(
     ./thirdparty/embree-${EMBREE_FLAVOUR}/lib
-    ./thirdparty/sdl2-2.12/lib
+    ./thirdparty/sdl2-2.12/lib/x64
 )
 
 link_libraries(
     embree3
-    SDL2-2.0d
+    SDL2
+    SDL2main
 )
 
 add_executable(lambda src/main.cpp)

@@ -36,7 +36,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "./thirdparty/embree-3.9.0.x86_64.windows/bin"
+                    "value": "./thirdparty/embree-3.9.0.x86_64.windows/bin;./thirdparty/sdl2-2.12/lib/x64"
                 }
             ],
             "args": [],
