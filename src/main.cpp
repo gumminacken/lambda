@@ -1,9 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <thread>
+#include <vector>
+
 #include "SDL.h"
 
 const int WIDTH = 640;
 const int HEIGHT = 480;
-const int NUMTHREADS = 1;
+const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
 
 struct Scanline {
     int y;
@@ -26,6 +30,7 @@ static int render_scanline(void *data)
         *curr++ = 0;
         *curr++ = 255;
     }
+    SDL_Delay(rand() % 500);
     scanline->done = true;
     return 0;
 }
@@ -44,8 +49,10 @@ int main(int argc, char* argv[]) {
 
     SDL_Surface *surface = SDL_GetWindowSurface(window);
 
-    SDL_Thread *threads[NUMTHREADS] = {};
-    Scanline *scanlines[NUMTHREADS] = {};
+    std::vector<SDL_Thread *> threads(NUMTHREADS);
+    std::vector<Scanline *> scanlines(NUMTHREADS);
+    //SDL_Thread *threads[NUMTHREADS] = {};
+    //Scanline *scanlines[NUMTHREADS] = {};
 
     int y = 0;
     bool done = false;
@@ -65,15 +72,15 @@ int main(int argc, char* argv[]) {
                 sprintf(scanlines[t]->threadname, "%d", y);
                 threads[t] = SDL_CreateThread(render_scanline, scanlines[t]->threadname, scanlines[t]);
                 scanlines[t]->threadid = SDL_GetThreadID(threads[t]);
-                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Thread Created %d", scanlines[t]->threadid);
+                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Thread Created %s", scanlines[t]->threadname);
                 ++y;
             } else if (scanlines[t]->done) {
-                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Thread done %d", scanlines[t]->threadid);
+                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Thread done %s", scanlines[t]->threadname);
                 // the thread is done
-                // detach thread
+                // wait for the thread to finish
                 SDL_WaitThread(threads[t], NULL);
                 // write data in the pixel buffer
-                SDL_memcpy(&(surface->pixels) + y * 4, scanlines[t]->pixels, WIDTH * 4);
+                SDL_memcpy((char *)surface->pixels + (surface->pitch * scanlines[t]->y), scanlines[t]->pixels, WIDTH * 4);
                 // Update WindowSurface
                 SDL_UpdateWindowSurface(window);
                 // create new scanline
