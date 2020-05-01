@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <thread>
 #include <vector>
+#include <stack>
 
 #include "SDL.h"
 
@@ -12,31 +13,52 @@ const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
 struct Scanline {
     int y;
     int width;
-    int threadid;
-    char threadname[128];
-    bool done;
     char pixels[WIDTH * 4];
 };
 
+struct Scanlines {
+    std::stack<Scanline *> *scanlines_to_render;
+    std::stack<Scanline *> *scanlines_done;
+};
 
-static int render_scanline(void *data)
-{
-    Scanline *scanline = (Scanline *)data;
+SDL_mutex *rendermutex = SDL_CreateMutex();
+SDL_mutex *buffermutex = SDL_CreateMutex();
 
-    char *curr = scanline->pixels;
-    for (int x = 0; x < scanline->width; ++x) {
-        *curr++ = (x / (float)scanline->width) * 255;
-        *curr++ = (scanline->y / (float)scanline->width) * 255;
-        *curr++ = 0;
-        *curr++ = 255;
+static int thread_worker(void *data) {
+    Scanlines *scanlines = (Scanlines *)data;
+
+    while (true) {
+        SDL_LockMutex(rendermutex);
+        // pop scanline from the stack
+        if (scanlines->scanlines_to_render->empty()) {
+            break;
+        }
+
+        Scanline *scanline = scanlines->scanlines_to_render->top();
+        scanlines->scanlines_to_render->pop();
+
+        SDL_UnlockMutex(rendermutex);
+
+        char *curr = scanline->pixels;
+        for (int x = 0; x < scanline->width; ++x) {
+            *curr++ = (x / (float)scanline->width) * 255;
+            *curr++ = (scanline->y / (float)scanline->width) * 255;
+            *curr++ = 0;
+            *curr++ = 255;
+        }
+        SDL_Delay(rand() % 500);
+
+        SDL_LockMutex(buffermutex);
+        // write scanline data into buffer
+        scanlines->scanlines_done->push(scanline);
+        SDL_UnlockMutex(buffermutex);
     }
-    SDL_Delay(rand() % 500);
-    scanline->done = true;
     return 0;
 }
 
 
 int main(int argc, char* argv[]) {
+
     if (SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Something failed!");
         return 1;
@@ -50,52 +72,38 @@ int main(int argc, char* argv[]) {
     SDL_Surface *surface = SDL_GetWindowSurface(window);
 
     std::vector<SDL_Thread *> threads(NUMTHREADS);
-    std::vector<Scanline *> scanlines(NUMTHREADS);
-    //SDL_Thread *threads[NUMTHREADS] = {};
-    //Scanline *scanlines[NUMTHREADS] = {};
+    Scanlines scanlines;
 
-    int y = 0;
     bool done = false;
 
+    for (int y = 0; y < HEIGHT; ++y) {
+        Scanline *scanline = (Scanline *)SDL_malloc(sizeof(Scanline));
+        scanline->y = y;
+        scanline->width = WIDTH;
+        scanlines.scanlines_to_render->push(scanline);
+    }
+
+    for (int t = 0; t < NUMTHREADS; ++t) {
+        threads[t] = SDL_CreateThread(thread_worker, "", &scanlines);
+    }
+
     while (!done) {
-        for (int t = 0; t < NUMTHREADS; ++t) {
-            if (y == HEIGHT) {
-                done = true;
-                break;
-            }
-            if (threads[t] == 0) {
-                // start of render
-                scanlines[t] = (Scanline *)SDL_malloc(sizeof(Scanline));
-                scanlines[t]->y = y;
-                scanlines[t]->width = WIDTH;
-                scanlines[t]->done = false;
-                sprintf(scanlines[t]->threadname, "%d", y);
-                threads[t] = SDL_CreateThread(render_scanline, scanlines[t]->threadname, scanlines[t]);
-                scanlines[t]->threadid = SDL_GetThreadID(threads[t]);
-                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Thread Created %s", scanlines[t]->threadname);
-                ++y;
-            } else if (scanlines[t]->done) {
-                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Thread done %s", scanlines[t]->threadname);
-                // the thread is done
-                // wait for the thread to finish
+        if (!rendermutex && scanlines.scanlines_to_render->empty()) {
+            for (int t = 0; t < NUMTHREADS; ++t) {
                 SDL_WaitThread(threads[t], NULL);
+            }
+            done = true;
+        }
+        if (!buffermutex) {
+            while (!scanlines.scanlines_done->empty()) {
+                Scanline *scanline = scanlines.scanlines_done->top();
+                scanlines.scanlines_done->pop();
                 // write data in the pixel buffer
-                SDL_memcpy((char *)surface->pixels + (surface->pitch * scanlines[t]->y), scanlines[t]->pixels, WIDTH * 4);
+                SDL_memcpy((char *)surface->pixels + (surface->pitch * scanline->y), scanline->pixels, WIDTH * 4);
                 // Update WindowSurface
                 SDL_UpdateWindowSurface(window);
-                // create new scanline
-                scanlines[t] = (Scanline *)SDL_malloc(sizeof(Scanline));
-                scanlines[t]->y = y;
-                scanlines[t]->width = WIDTH;
-                scanlines[t]->done = false;
-                threads[t] = SDL_CreateThread(render_scanline, scanlines[t]->threadname, scanlines[t]);
-                scanlines[t]->threadid = SDL_GetThreadID(threads[t]);
-                sprintf(scanlines[t]->threadname, "%d", y);
-                ++y;
             }
         }
-
-        SDL_UpdateWindowSurface(window);
 
         while (SDL_PollEvent(&event)){
             if (event.type == SDL_QUIT) {
