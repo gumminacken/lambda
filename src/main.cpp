@@ -16,26 +16,57 @@ struct Scanline {
     char pixels[WIDTH * 4];
 };
 
-struct Scanlines {
-    std::stack<Scanline *> *scanlines_to_render;
-    std::stack<Scanline *> *scanlines_done;
+struct ScanlineStack {
+    int top;
+    Scanline *elements[HEIGHT];
 };
 
+struct Scanlines {
+    ScanlineStack *todo;
+    ScanlineStack *done;
+};
+
+Scanlines *make_scanlines() {
+    Scanlines *scanlines = (Scanlines *)SDL_malloc(sizeof(Scanlines));
+    scanlines->todo = (ScanlineStack *)SDL_malloc(sizeof(ScanlineStack));
+    scanlines->todo->top = -1;
+    scanlines->done = (ScanlineStack *)SDL_malloc(sizeof(ScanlineStack));
+    scanlines->done->top = -1;
+    return scanlines;
+}
+
+void stack_push(ScanlineStack *stack, Scanline* scanline) {
+    ++stack->top;
+    stack->elements[stack->top] = scanline;
+}
+
+Scanline *stack_pop(ScanlineStack *stack) {
+    Scanline *scanline = stack->elements[stack->top];
+    --stack->top;
+    return scanline;
+}
+
+bool stack_empty(ScanlineStack *stack) {
+   return (stack->top == -1);
+}
+
+// TODO: Replace with Spinlocks?
 SDL_mutex *rendermutex = SDL_CreateMutex();
 SDL_mutex *buffermutex = SDL_CreateMutex();
 
 static int thread_worker(void *data) {
     Scanlines *scanlines = (Scanlines *)data;
+    ScanlineStack *scanlines_todo = scanlines->todo;
+    ScanlineStack *scanlines_done = scanlines->done;
 
     while (true) {
         SDL_LockMutex(rendermutex);
         // pop scanline from the stack
-        if (scanlines->scanlines_to_render->empty()) {
+        if (stack_empty(scanlines_todo)) {
             break;
         }
 
-        Scanline *scanline = scanlines->scanlines_to_render->top();
-        scanlines->scanlines_to_render->pop();
+        Scanline *scanline = stack_pop(scanlines_todo);
 
         SDL_UnlockMutex(rendermutex);
 
@@ -50,7 +81,7 @@ static int thread_worker(void *data) {
 
         SDL_LockMutex(buffermutex);
         // write scanline data into buffer
-        scanlines->scanlines_done->push(scanline);
+        stack_push(scanlines_done, scanline);
         SDL_UnlockMutex(buffermutex);
     }
     return 0;
@@ -72,38 +103,39 @@ int main(int argc, char* argv[]) {
     SDL_Surface *surface = SDL_GetWindowSurface(window);
 
     std::vector<SDL_Thread *> threads(NUMTHREADS);
-    Scanlines scanlines;
+    Scanlines *scanlines = make_scanlines();
+    ScanlineStack *scanlines_todo = scanlines->todo;
+    ScanlineStack *scanlines_done = scanlines->done;
 
     bool done = false;
 
-    for (int y = 0; y < HEIGHT; ++y) {
+    for (int y = HEIGHT-1; y >= 0; --y) {
         Scanline *scanline = (Scanline *)SDL_malloc(sizeof(Scanline));
         scanline->y = y;
         scanline->width = WIDTH;
-        scanlines.scanlines_to_render->push(scanline);
+        stack_push(scanlines_todo, scanline);
     }
 
     for (int t = 0; t < NUMTHREADS; ++t) {
-        threads[t] = SDL_CreateThread(thread_worker, "", &scanlines);
+        threads[t] = SDL_CreateThread(thread_worker, "", (void *)scanlines);
     }
 
     while (!done) {
-        if (!rendermutex && scanlines.scanlines_to_render->empty()) {
+        if (!rendermutex && stack_empty(scanlines_todo)) {
             for (int t = 0; t < NUMTHREADS; ++t) {
                 SDL_WaitThread(threads[t], NULL);
             }
             done = true;
         }
-        if (!buffermutex) {
-            while (!scanlines.scanlines_done->empty()) {
-                Scanline *scanline = scanlines.scanlines_done->top();
-                scanlines.scanlines_done->pop();
-                // write data in the pixel buffer
-                SDL_memcpy((char *)surface->pixels + (surface->pitch * scanline->y), scanline->pixels, WIDTH * 4);
-                // Update WindowSurface
-                SDL_UpdateWindowSurface(window);
-            }
+        SDL_LockMutex(buffermutex);
+        while (!stack_empty(scanlines_done)) {
+            Scanline *scanline = stack_pop(scanlines_done);
+            // write data in the pixel buffer
+            SDL_memcpy((char *)surface->pixels + (surface->pitch * scanline->y), scanline->pixels, WIDTH * 4);
+            // Update WindowSurface
+            SDL_UpdateWindowSurface(window);
         }
+        SDL_UnlockMutex(buffermutex);
 
         while (SDL_PollEvent(&event)){
             if (event.type == SDL_QUIT) {
