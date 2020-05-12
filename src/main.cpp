@@ -77,7 +77,7 @@ static int thread_worker(void *data) {
             *curr++ = 0;
             *curr++ = 255;
         }
-        SDL_Delay(rand() % 500);
+        SDL_Delay(rand() % 200);
 
         SDL_LockMutex(buffermutex);
         // write scanline data into buffer
@@ -86,7 +86,6 @@ static int thread_worker(void *data) {
     }
     return 0;
 }
-
 
 int main(int argc, char* argv[]) {
 
@@ -98,7 +97,7 @@ int main(int argc, char* argv[]) {
     SDL_Event event;
 
     const char *window_title = "Lambda - A Fucking Awesome Renderer";
-    SDL_Window *window = SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, NULL);
+    SDL_Window *window = SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, 0);
 
     SDL_Surface *surface = SDL_GetWindowSurface(window);
 
@@ -116,17 +115,18 @@ int main(int argc, char* argv[]) {
         stack_push(scanlines_todo, scanline);
     }
 
-    for (int t = 0; t < NUMTHREADS; ++t) {
+    for (unsigned int t = 0; t < NUMTHREADS; ++t) {
         threads[t] = SDL_CreateThread(thread_worker, "", (void *)scanlines);
     }
 
     while (!done) {
-        if (!rendermutex && stack_empty(scanlines_todo)) {
+        if (stack_empty(scanlines_todo) && stack_empty(scanlines_done)) {
             for (int t = 0; t < NUMTHREADS; ++t) {
-                SDL_WaitThread(threads[t], NULL);
+                SDL_DetachThread(threads[t]);
             }
             done = true;
         }
+
         SDL_LockMutex(buffermutex);
         while (!stack_empty(scanlines_done)) {
             Scanline *scanline = stack_pop(scanlines_done);
