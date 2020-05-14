@@ -91,8 +91,6 @@ static int thread_worker(void *data) {
 
 int main(int argc, char* argv[]) {
 
-    Sample2D *samples = sample2D_random(1234, 10);
-
     if (SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Something failed!");
         return 1;
