@@ -6,6 +6,8 @@
 
 #include "SDL.h"
 
+#include "lambda.h"
+
 const int WIDTH = 640;
 const int HEIGHT = 480;
 const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
@@ -89,6 +91,8 @@ static int thread_worker(void *data) {
 
 int main(int argc, char* argv[]) {
 
+    Sample2D *samples = sample2D_random(1234, 10);
+
     if (SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Something failed!");
         return 1;
@@ -121,7 +125,7 @@ int main(int argc, char* argv[]) {
 
     while (!done) {
         if (stack_empty(scanlines_todo) && stack_empty(scanlines_done)) {
-            for (int t = 0; t < NUMTHREADS; ++t) {
+            for (unsigned int t = 0; t < NUMTHREADS; ++t) {
                 SDL_DetachThread(threads[t]);
             }
             done = true;
