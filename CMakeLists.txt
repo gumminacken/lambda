@@ -26,6 +26,9 @@ link_libraries(
     SDL2main
 )
 
-add_executable(lambda src/main.cpp src/sampler.cpp)
-
-
+add_executable(lambda
+  src/main.cpp
+  src/math.cpp
+  src/sampler.cpp
+  src/intersect.cpp
+  )

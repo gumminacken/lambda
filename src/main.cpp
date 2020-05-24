@@ -3,6 +3,7 @@
 #include <thread>
 #include <vector>
 #include <stack>
+#include <time.h>
 
 #include "SDL.h"
 
@@ -10,6 +11,7 @@
 
 const int WIDTH = 640;
 const int HEIGHT = 480;
+const int SAMPLES = 64;
 const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
 
 struct Scanline {
@@ -56,6 +58,9 @@ bool stack_empty(ScanlineStack *stack) {
 SDL_mutex *rendermutex = SDL_CreateMutex();
 SDL_mutex *buffermutex = SDL_CreateMutex();
 
+// temp circle
+static const Lt_Circle circle = Li_Circle(200, Li_Vec3f(WIDTH/2, HEIGHT/2, 0));
+
 static int thread_worker(void *data) {
     Scanlines *scanlines = (Scanlines *)data;
     ScanlineStack *scanlines_todo = scanlines->todo;
@@ -74,9 +79,25 @@ static int thread_worker(void *data) {
 
         char *curr = scanline->pixels;
         for (int x = 0; x < scanline->width; ++x) {
-            *curr++ = (x / (float)scanline->width) * 255;
-            *curr++ = (scanline->y / (float)scanline->width) * 255;
-            *curr++ = 0;
+            Sample2D *samples = sample2D_random(x * scanline->y, SAMPLES);
+            float r = 0;
+            float g = 0;
+            float b = 0;
+            for (int i = 0; i < SAMPLES; ++i) {
+                Sample2D sample = Sample2D {
+                    (float)x + samples[i].x,
+                    (float)scanline->y + samples[i].y
+                };
+                if (intersect(circle, sample)) {
+                    r += (x / (float)scanline->width) * 255;
+                    g += (scanline->y / (float)scanline->width) * 255;
+                }
+            }
+            SDL_free(samples);
+
+            *curr++ = r / SAMPLES;
+            *curr++ = g / SAMPLES;
+            *curr++ = b / SAMPLES;
             *curr++ = 255;
         }
         SDL_Delay(rand() % 200);
@@ -126,7 +147,7 @@ int main(int argc, char* argv[]) {
             for (unsigned int t = 0; t < NUMTHREADS; ++t) {
                 SDL_DetachThread(threads[t]);
             }
-            done = true;
+            //done = true;
         }
 
         SDL_LockMutex(buffermutex);
