@@ -11,7 +11,7 @@
 
 const int WIDTH = 640;
 const int HEIGHT = 480;
-const int SAMPLES = 64;
+const int SAMPLES = 32;
 const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
 
 struct Scanline {
@@ -59,7 +59,7 @@ SDL_mutex *rendermutex = SDL_CreateMutex();
 SDL_mutex *buffermutex = SDL_CreateMutex();
 
 // temp circle
-static const Lt_Circle circle = Li_Circle(200, Li_Vec3f(WIDTH/2, HEIGHT/2, 0));
+static const Lt_Scene scene = create_scene(100, 5.f, 20.f);
 
 static int thread_worker(void *data) {
     Scanlines *scanlines = (Scanlines *)data;
@@ -88,7 +88,7 @@ static int thread_worker(void *data) {
                     (float)x + samples[i].x,
                     (float)scanline->y + samples[i].y
                 };
-                if (intersect(circle, sample)) {
+                if (intersect(scene, sample)) {
                     r += (x / (float)scanline->width) * 255;
                     g += (scanline->y / (float)scanline->width) * 255;
                 }
@@ -100,7 +100,7 @@ static int thread_worker(void *data) {
             *curr++ = b / SAMPLES;
             *curr++ = 255;
         }
-        SDL_Delay(rand() % 200);
+        // SDL_Delay(rand() % 200);
 
         SDL_LockMutex(buffermutex);
         // write scanline data into buffer

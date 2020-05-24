@@ -22,12 +22,20 @@ Lt_Vec3f operator+(Lt_Vec3f a, Lt_Vec3f b);
 Lt_Vec3f operator-(Lt_Vec3f a, Lt_Vec3f b);
 float Vec3f_length(Lt_Vec3f vector);
 
-// Intersect
+// Scene
 struct Lt_Circle {
     float radius;
     Lt_Vec3f center;
 };
 
+struct Lt_Scene {
+    size_t elements;
+    Lt_Circle *circles;
+};
+
+Lt_Scene create_scene(size_t elements, float minsize, float maxsize);
+
 Lt_Circle Li_Circle(float radius, Lt_Vec3f center);
 
 bool intersect(Lt_Circle object, Sample2D sample);
+bool intersect(Lt_Scene object, Sample2D sample);

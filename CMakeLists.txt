@@ -30,5 +30,5 @@ add_executable(lambda
   src/main.cpp
   src/math.cpp
   src/sampler.cpp
-  src/intersect.cpp
+  src/scene.cpp
   )
