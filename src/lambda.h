@@ -1,5 +1,7 @@
 # pragma once
 
+#include <stdio.h>
+
 // Sampler
 struct Sample2D {
     float x;
@@ -20,4 +22,12 @@ Lt_Vec3f operator+(Lt_Vec3f a, Lt_Vec3f b);
 Lt_Vec3f operator-(Lt_Vec3f a, Lt_Vec3f b);
 float Vec3f_length(Lt_Vec3f vector);
 
+// Intersect
+struct Lt_Circle {
+    float radius;
+    Lt_Vec3f center;
+};
 
+Lt_Circle Li_Circle(float radius, Lt_Vec3f center);
+
+bool intersect(Lt_Circle object, Sample2D sample);
