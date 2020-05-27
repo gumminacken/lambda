@@ -1,5 +1,6 @@
+#include <math.h>
+
 #include "lambda.h"
-#include "math.h"
 
 Lt_Vec3f Li_Vec3f(float x, float y, float z) {
     return Lt_Vec3f {x, y, z};

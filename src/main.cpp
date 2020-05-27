@@ -8,26 +8,9 @@
 
 Scanlines *create_scanlines() {
     Scanlines *scanlines = (Scanlines *)SDL_malloc(sizeof(Scanlines));
-    scanlines->todo = (ScanlineStack *)SDL_malloc(sizeof(ScanlineStack));
-    scanlines->todo->top = -1;
-    scanlines->done = (ScanlineStack *)SDL_malloc(sizeof(ScanlineStack));
-    scanlines->done->top = -1;
+    scanlines->todo = stack_create_empty(HEIGHT, sizeof(Scanline));
+    scanlines->done = stack_create_empty(HEIGHT, sizeof(Scanline));
     return scanlines;
-}
-
-void stack_push(ScanlineStack *stack, Scanline* scanline) {
-    ++stack->top;
-    stack->elements[stack->top] = scanline;
-}
-
-Scanline *stack_pop(ScanlineStack *stack) {
-    Scanline *scanline = stack->elements[stack->top];
-    --stack->top;
-    return scanline;
-}
-
-bool stack_empty(ScanlineStack *stack) {
-   return (stack->top == -1);
 }
 
 // TODO: Replace with Spinlocks?
@@ -39,8 +22,8 @@ static const Lt_Scene scene = create_scene(100, 5.f, 20.f);
 
 static int thread_worker(void *data) {
     Scanlines *scanlines = (Scanlines *)data;
-    ScanlineStack *scanlines_todo = scanlines->todo;
-    ScanlineStack *scanlines_done = scanlines->done;
+    Stack *scanlines_todo = scanlines->todo;
+    Stack *scanlines_done = scanlines->done;
 
     while (true) {
         SDL_LockMutex(rendermutex);
@@ -49,7 +32,7 @@ static int thread_worker(void *data) {
             break;
         }
 
-        Scanline *scanline = stack_pop(scanlines_todo);
+        Scanline *scanline = (Scanline *)stack_pop(scanlines_todo);
 
         SDL_UnlockMutex(rendermutex);
 
@@ -76,7 +59,7 @@ static int thread_worker(void *data) {
             *curr++ = b / SAMPLES;
             *curr++ = 255;
         }
-        // SDL_Delay(rand() % 200);
+        SDL_Delay(rand() % 300);
 
         SDL_LockMutex(buffermutex);
         // write scanline data into buffer
@@ -101,14 +84,16 @@ int main(int argc, char* argv[]) {
     SDL_Surface *surface = SDL_GetWindowSurface(window);
 
     std::vector<SDL_Thread *> threads(NUMTHREADS);
-    Scanlines *scanlines = make_scanlines();
-    ScanlineStack *scanlines_todo = scanlines->todo;
-    ScanlineStack *scanlines_done = scanlines->done;
+    Scanlines *scanlines = create_scanlines();
+    Stack *scanlines_todo = scanlines->todo;
+    Stack *scanlines_done = scanlines->done;
 
     bool done = false;
 
+    Scanline *scanliness = (Scanline *)malloc(sizeof(Scanline) * HEIGHT);
+
     for (int y = HEIGHT-1; y >= 0; --y) {
-        Scanline *scanline = (Scanline *)SDL_malloc(sizeof(Scanline));
+        Scanline *scanline = scanliness + y;
         scanline->y = y;
         scanline->width = WIDTH;
         stack_push(scanlines_todo, scanline);
@@ -121,14 +106,17 @@ int main(int argc, char* argv[]) {
     while (!done) {
         if (stack_empty(scanlines_todo) && stack_empty(scanlines_done)) {
             for (unsigned int t = 0; t < NUMTHREADS; ++t) {
-                SDL_DetachThread(threads[t]);
+                if (threads[t] != NULL) {
+                    SDL_DetachThread(threads[t]);
+                    threads[t] = NULL;
+                }
             }
-            //done = true;
+            // done = true;
         }
 
         SDL_LockMutex(buffermutex);
         while (!stack_empty(scanlines_done)) {
-            Scanline *scanline = stack_pop(scanlines_done);
+            Scanline *scanline = (Scanline *)stack_pop(scanlines_done);
             // write data in the pixel buffer
             SDL_memcpy((char *)surface->pixels + (surface->pitch * scanline->y), scanline->pixels, WIDTH * 4);
             // Update WindowSurface
