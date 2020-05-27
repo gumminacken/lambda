@@ -1,36 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <thread>
 #include <vector>
 #include <stack>
 #include <time.h>
 
-#include "SDL.h"
-
 #include "lambda.h"
 
-const int WIDTH = 640;
-const int HEIGHT = 480;
-const int SAMPLES = 32;
-const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
-
-struct Scanline {
-    int y;
-    int width;
-    char pixels[WIDTH * 4];
-};
-
-struct ScanlineStack {
-    int top;
-    Scanline *elements[HEIGHT];
-};
-
-struct Scanlines {
-    ScanlineStack *todo;
-    ScanlineStack *done;
-};
-
-Scanlines *make_scanlines() {
+Scanlines *create_scanlines() {
     Scanlines *scanlines = (Scanlines *)SDL_malloc(sizeof(Scanlines));
     scanlines->todo = (ScanlineStack *)SDL_malloc(sizeof(ScanlineStack));
     scanlines->todo->top = -1;

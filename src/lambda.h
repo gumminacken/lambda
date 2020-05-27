@@ -1,6 +1,17 @@
 # pragma once
 
 #include <stdio.h>
+#include <malloc.h>
+#include <string.h>
+#include <thread>
+
+#include "SDL.h"
+
+// Rendersettings
+const int WIDTH = 640;
+const int HEIGHT = 480;
+const int SAMPLES = 32;
+const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
 
 // Sampler
 struct Sample2D {
@@ -39,3 +50,28 @@ Lt_Circle Li_Circle(float radius, Lt_Vec3f center);
 
 bool intersect(Lt_Circle object, Sample2D sample);
 bool intersect(Lt_Scene object, Sample2D sample);
+
+// Stack
+struct Stack {
+    size_t elements;
+    size_t elementsize;
+    void *top;
+    void *data;
+};
+
+void stack_push(Stack *stack, void* element);
+void *stack_pop(Stack *stack);
+bool stack_empty(Stack *stack);
+Stack *stack_create_empty(size_t elements, size_t elementsize);
+
+// Scanlines
+struct Scanline {
+    int y;
+    int width;
+    char pixels[WIDTH * 4];
+};
+
+struct Scanlines {
+    Stack *todo;
+    Stack *done;
+};
