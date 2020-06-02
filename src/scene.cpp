@@ -10,12 +10,12 @@ Lt_Circle Li_Circle(float radius, Lt_Vec3f center) {
     };
 }
 
-bool intersect(Lt_Circle object, Sample2D sample) {
+bool intersect(Lt_Circle object, Lt_Sample2D sample) {
     Lt_Vec3f sample_vector = Li_Vec3f(sample.x, sample.y, 0);
     return (Vec3f_length(sample_vector - object.center) <= object.radius);
 }
 
-bool intersect(Lt_Scene scene, Sample2D sample) {
+bool intersect(Lt_Scene scene, Lt_Sample2D sample) {
     for (size_t i = 0; i < scene.elements; ++i) {
         if (intersect(scene.circles[i], sample)) {
             return true;
@@ -30,7 +30,7 @@ Lt_Scene create_scene(size_t elements, float minsize, float maxsize) {
         (Lt_Circle *)malloc(sizeof(Lt_Circle) * elements)
     };
 
-    Sample2D *samples = sample2D_random(12345, elements);
+    Lt_Sample2D *samples = sample2D_random(12345, elements);
 
     for (size_t i = 0; i < elements; ++i) {
         float size = minsize + ((rand() / float(RAND_MAX)) * (maxsize - minsize));

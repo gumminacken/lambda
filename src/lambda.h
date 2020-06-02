@@ -14,12 +14,12 @@ const int SAMPLES = 32;
 const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
 
 // Sampler
-struct Sample2D {
+struct Lt_Sample2D {
     float x;
     float y;
 };
 
-Sample2D* sample2D_random(unsigned int seed, size_t elements);
+Lt_Sample2D* sample2D_random(unsigned int seed, size_t elements);
 
 // Math
 struct Lt_Vec3f {
@@ -48,8 +48,8 @@ Lt_Scene create_scene(size_t elements, float minsize, float maxsize);
 
 Lt_Circle Li_Circle(float radius, Lt_Vec3f center);
 
-bool intersect(Lt_Circle object, Sample2D sample);
-bool intersect(Lt_Scene object, Sample2D sample);
+bool intersect(Lt_Circle object, Lt_Sample2D sample);
+bool intersect(Lt_Scene object, Lt_Sample2D sample);
 
 // Stack
 struct Stack {
@@ -65,13 +65,13 @@ bool stack_empty(Stack *stack);
 Stack *stack_create_empty(size_t elements, size_t elementsize);
 
 // Scanlines
-struct Scanline {
+struct Lt_Scanline {
     int y;
     int width;
     char pixels[WIDTH * 4];
 };
 
-struct Scanlines {
+struct Lt_Scanlines {
     Stack *todo;
     Stack *done;
 };
