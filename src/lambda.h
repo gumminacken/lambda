@@ -39,17 +39,31 @@ struct Lt_Circle {
     Lt_Vec3f center;
 };
 
-struct Lt_Scene {
+struct Lt_Grid {
     size_t elements;
+    float minx;
+    float miny;
+    float maxx;
+    float maxy;
     Lt_Circle *circles;
 };
 
-Lt_Scene create_scene(size_t elements, float minsize, float maxsize);
+struct Lt_Scene {
+    size_t num_circles;
+    size_t num_grids;
+    size_t gridsize;
+    Lt_Circle *circles;
+    Lt_Grid *grids;
+};
+
+Lt_Scene create_scene(size_t num_circles, size_t gridsize, float minsize, float maxsize);
+void create_acceleration_structure(Lt_Scene *scene);
 
 Lt_Circle Li_Circle(float radius, Lt_Vec3f center);
 
-bool intersect(Lt_Circle object, Lt_Sample2D sample);
+bool intersect(Lt_Circle *object, Lt_Sample2D sample);
 bool intersect(Lt_Scene object, Lt_Sample2D sample);
+Lt_Grid *get_intersected_grid(Lt_Scene *scene, int x, int y);
 
 // Stack
 struct Stack {
