@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <thread>
+#include <math.h>
 
 #include "SDL.h"
 
@@ -40,7 +41,9 @@ struct Lt_Circle {
 };
 
 struct Lt_Grid {
-    size_t elements;
+    size_t num_circles;
+    int index;
+    int stride;
     float minx;
     float miny;
     float maxx;
@@ -64,6 +67,7 @@ Lt_Circle Li_Circle(float radius, Lt_Vec3f center);
 bool intersect(Lt_Circle *object, Lt_Sample2D sample);
 bool intersect(Lt_Scene object, Lt_Sample2D sample);
 Lt_Grid *get_intersected_grid(Lt_Scene *scene, int x, int y);
+int *get_intersected_grid_indices(Lt_Scene *scene, Lt_Circle *circle);
 
 // Stack
 struct Stack {

@@ -17,7 +17,7 @@ bool intersect(Lt_Circle *object, Lt_Sample2D sample) {
 
 bool intersect(Lt_Scene scene, Lt_Sample2D sample) {
     Lt_Grid *grid = get_intersected_grid(&scene, sample.x, sample.y);
-    for (size_t i = 0; i < grid->elements; ++i) {
+    for (size_t i = 0; i < grid->num_circles; ++i) {
         if (intersect(grid->circles + i, sample)) {
             return true;
         }
@@ -28,6 +28,32 @@ bool intersect(Lt_Scene scene, Lt_Sample2D sample) {
 Lt_Grid *get_intersected_grid(Lt_Scene *scene, int x, int y) {
     Lt_Grid *grid = scene->grids + ((x / scene->gridsize) + ((y / scene->gridsize) * (WIDTH / scene->gridsize)));
     return grid;
+}
+
+int *get_intersected_grid_indices(Lt_Scene *scene, Lt_Circle *circle) {
+    Lt_Grid *grid = get_intersected_grid(scene, circle->center.x, circle->center.y);
+    int offset_right = (int)ceilf(scene->gridsize / (circle->radius - (grid->maxx - circle->center.x)));
+    int offset_bottom = (int)ceilf(scene->gridsize / (circle->radius - (grid->maxy - circle->center.y)));
+    int offset_left = (int)ceilf(scene->gridsize / (circle->radius - (circle->center.x - grid->minx)));
+    int offset_top = (int)ceilf(scene->gridsize / (circle->radius - (circle->center.y - grid->miny)));
+    
+    offset_right = offset_right < 0 ? 0 : offset_right;
+    offset_left = offset_left < 0 ? 0 : offset_left;
+    offset_top = offset_top < 0 ? 0 : offset_top;
+    offset_bottom = offset_bottom < 0 ? 0 : offset_bottom;
+
+    int num_indices = (offset_right + offset_left + 1) * (offset_top + offset_bottom + 1);
+    int *indices = (int *)malloc(sizeof(int) * (num_indices + 1));
+    *(indices + num_indices + 1) = -1;
+
+    for (int y = grid->index - (offset_top * grid->stride); y <= grid->index + (offset_bottom * grid->stride); y += grid->stride) {
+        for (int x = y - offset_left; x <= y + offset_right; ++x) {
+            *indices = x;
+            ++indices;
+        }
+    }
+    indices = indices - num_indices;
+    return indices;
 }
 
 Lt_Scene create_scene(size_t num_circles, size_t gridsize, float minsize, float maxsize) {
@@ -44,7 +70,9 @@ Lt_Scene create_scene(size_t num_circles, size_t gridsize, float minsize, float 
     Lt_Sample2D *samples = sample2D_random(12345, num_circles);
 
     for (size_t i = 0; i < num_grids; ++i) {
-        scene.grids[i].elements = 0;
+        scene.grids[i].num_circles = 0;
+        scene.grids[i].index = i;
+        scene.grids[i].stride = WIDTH / gridsize + 1;
         scene.grids[i].minx = (gridsize * i) % WIDTH;
         scene.grids[i].maxx = scene.grids[i].minx + gridsize;
         scene.grids[i].miny = ((gridsize * i) / WIDTH) * gridsize;
@@ -56,9 +84,14 @@ Lt_Scene create_scene(size_t num_circles, size_t gridsize, float minsize, float 
         float size = minsize + ((rand() / float(RAND_MAX)) * (maxsize - minsize));
         Lt_Circle *circle = (Lt_Circle *)malloc(sizeof(Lt_Circle));
         *circle = {size, Li_Vec3f(samples[i].x * WIDTH, samples[i].y * HEIGHT, 0)};
-        Lt_Grid *grid = get_intersected_grid(&scene, circle->center.x, circle->center.y);
-        memcpy(grid->circles + grid->elements, circle, sizeof(Lt_Circle));
-        grid->elements += 1;
+        int *indices = get_intersected_grid_indices(&scene, circle);
+
+        while (*indices != -1) {
+            Lt_Grid *grid = scene.grids + *indices;
+            memcpy(grid->circles + grid->num_circles, circle, sizeof(Lt_Circle));
+            grid->num_circles += 1;
+            ++indices;
+        }
     }
 
     return scene;

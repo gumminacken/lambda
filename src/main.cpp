@@ -18,7 +18,7 @@ SDL_mutex *rendermutex = SDL_CreateMutex();
 SDL_mutex *buffermutex = SDL_CreateMutex();
 
 // temp circle
-static const Lt_Scene scene = create_scene(100, 16, 5.f, 20.f);
+static const Lt_Scene scene = create_scene(1000, 16, 2.f, 20.f);
 
 static int thread_worker(void *data) {
     Lt_Scanlines *scanlines = (Lt_Scanlines *)data;
