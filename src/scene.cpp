@@ -32,10 +32,10 @@ Lt_Grid *get_intersected_grid(Lt_Scene *scene, int x, int y) {
 
 int *get_intersected_grid_indices(Lt_Scene *scene, Lt_Circle *circle) {
     Lt_Grid *grid = get_intersected_grid(scene, circle->center.x, circle->center.y);
-    int offset_right = (int)ceilf(scene->gridsize / (circle->radius - (grid->maxx - circle->center.x)));
-    int offset_bottom = (int)ceilf(scene->gridsize / (circle->radius - (grid->maxy - circle->center.y)));
-    int offset_left = (int)ceilf(scene->gridsize / (circle->radius - (circle->center.x - grid->minx)));
-    int offset_top = (int)ceilf(scene->gridsize / (circle->radius - (circle->center.y - grid->miny)));
+    int offset_right = (int)ceilf((circle->radius - (grid->maxx - circle->center.x)) / scene->gridsize);
+    int offset_bottom = (int)ceilf((circle->radius - (grid->maxy - circle->center.y)) / scene->gridsize);
+    int offset_left = (int)ceilf((circle->radius - (circle->center.x - grid->minx)) / scene->gridsize);
+    int offset_top = (int)ceilf((circle->radius - (circle->center.y - grid->miny)) / scene->gridsize);
     
     offset_right = offset_right < 0 ? 0 : offset_right;
     offset_left = offset_left < 0 ? 0 : offset_left;
@@ -44,11 +44,11 @@ int *get_intersected_grid_indices(Lt_Scene *scene, Lt_Circle *circle) {
 
     int num_indices = (offset_right + offset_left + 1) * (offset_top + offset_bottom + 1);
     int *indices = (int *)malloc(sizeof(int) * (num_indices + 1));
-    *(indices + num_indices + 1) = -1;
+    *(indices + num_indices) = -1;
 
     for (int y = grid->index - (offset_top * grid->stride); y <= grid->index + (offset_bottom * grid->stride); y += grid->stride) {
         for (int x = y - offset_left; x <= y + offset_right; ++x) {
-            *indices = x;
+            *indices = x < 0 ? 0 : (x > scene->num_grids - 1 ? scene->num_grids - 1 : x);
             ++indices;
         }
     }
