@@ -1,6 +1,3 @@
-#include <malloc.h>
-#include <stdlib.h>
-
 #include "lambda.h"
 
 Lt_Circle Li_Circle(float radius, Lt_Vec3f center) {

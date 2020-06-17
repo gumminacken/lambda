@@ -1,9 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
-#include <stack>
-#include <time.h>
-
 #include "lambda.h"
 
 Lt_Scanlines *create_scanlines() {

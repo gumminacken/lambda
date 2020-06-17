@@ -1,5 +1,3 @@
-#include <math.h>
-
 #include "lambda.h"
 
 Lt_Vec3f Li_Vec3f(float x, float y, float z) {
