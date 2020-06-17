@@ -72,7 +72,7 @@ Lt_Scene create_scene(size_t num_circles, size_t gridsize, float minsize, float 
     for (size_t i = 0; i < num_grids; ++i) {
         scene.grids[i].num_circles = 0;
         scene.grids[i].index = i;
-        scene.grids[i].stride = WIDTH / gridsize + 1;
+        scene.grids[i].stride = WIDTH / gridsize;
         scene.grids[i].minx = (gridsize * i) % WIDTH;
         scene.grids[i].maxx = scene.grids[i].minx + gridsize;
         scene.grids[i].miny = ((gridsize * i) / WIDTH) * gridsize;
