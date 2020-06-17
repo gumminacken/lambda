@@ -1,4 +1,4 @@
-# pragma once
+#pragma once
 
 #include <malloc.h>
 #include <math.h>
@@ -10,88 +10,90 @@
 
 #include "SDL.h"
 
-// Rendersettings
 const int WIDTH = 640;
 const int HEIGHT = 480;
 const int SAMPLES = 32;
 const unsigned int NUMTHREADS = std::thread::hardware_concurrency();
 
-// Sampler
-struct Lt_Sample2D {
-    float x;
-    float y;
-};
+namespace Lt {
+    // Sampler
+    struct Sample2D {
+        float x;
+        float y;
+    };
 
-Lt_Sample2D* sample2D_random(unsigned int seed, size_t elements);
+    Sample2D* sample2D_random(unsigned int seed, size_t elements);
 
-// Math
-struct Lt_Vec3f {
-    float x;
-    float y;
-    float z;
-};
+    // Math
+    struct Vec3f {
+        float x;
+        float y;
+        float z;
+    };
 
-Lt_Vec3f Li_Vec3f(float x, float y, float z);
-Lt_Vec3f operator+(Lt_Vec3f a, Lt_Vec3f b);
-Lt_Vec3f operator-(Lt_Vec3f a, Lt_Vec3f b);
-float Vec3f_length(Lt_Vec3f vector);
+    Vec3f operator+(Vec3f a, Vec3f b);
+    Vec3f operator-(Vec3f a, Vec3f b);
 
-// Scene
-struct Lt_Circle {
-    float radius;
-    Lt_Vec3f center;
-};
+    // Scene
+    struct Circle {
+        float radius;
+        Vec3f center;
+    };
 
-struct Lt_Grid {
-    size_t num_circles;
-    int index;
-    int stride;
-    float minx;
-    float miny;
-    float maxx;
-    float maxy;
-    Lt_Circle *circles;
-};
+    struct Grid {
+        size_t num_circles;
+        int index;
+        int stride;
+        float minx;
+        float miny;
+        float maxx;
+        float maxy;
+        Circle *circles;
+    };
 
-struct Lt_Scene {
-    size_t num_circles;
-    size_t num_grids;
-    size_t gridsize;
-    Lt_Circle *circles;
-    Lt_Grid *grids;
-};
+    struct Scene {
+        size_t num_circles;
+        size_t num_grids;
+        size_t gridsize;
+        Circle *circles;
+        Grid *grids;
+    };
 
-Lt_Scene create_scene(size_t num_circles, size_t gridsize, float minsize, float maxsize);
-void create_acceleration_structure(Lt_Scene *scene);
+    // Stack
+    struct Stack {
+        size_t elements;
+        size_t elementsize;
+        void *top;
+        void *data;
+    };
 
-Lt_Circle Li_Circle(float radius, Lt_Vec3f center);
+    // Scanlines
+    struct Scanline {
+        int y;
+        int width;
+        char pixels[WIDTH * 4];
+    };
 
-bool intersect(Lt_Circle *object, Lt_Sample2D sample);
-bool intersect(Lt_Scene object, Lt_Sample2D sample);
-Lt_Grid *get_intersected_grid(Lt_Scene *scene, int x, int y);
-int *get_intersected_grid_indices(Lt_Scene *scene, Lt_Circle *circle);
+    struct Scanlines {
+        Stack *todo;
+        Stack *done;
+    };
+}
 
-// Stack
-struct Stack {
-    size_t elements;
-    size_t elementsize;
-    void *top;
-    void *data;
-};
 
-void stack_push(Stack *stack, void* element);
-void *stack_pop(Stack *stack);
-bool stack_empty(Stack *stack);
-Stack *stack_create_empty(size_t elements, size_t elementsize);
+namespace Li {
+    Lt::Vec3f Vec3f(float x, float y, float z);
+    Lt::Circle Circle(float radius, Lt::Vec3f center);
+    float Vec3f_length(Lt::Vec3f vector);
+    Lt::Scene create_scene(size_t num_circles, size_t gridsize, float minsize, float maxsize);
+    bool intersect(Lt::Circle *object, Lt::Sample2D sample);
+    bool intersect(Lt::Scene object, Lt::Sample2D sample);
 
-// Scanlines
-struct Lt_Scanline {
-    int y;
-    int width;
-    char pixels[WIDTH * 4];
-};
+    Lt::Grid *get_intersected_grid(Lt::Scene *scene, int x, int y);
+    int *get_intersected_grid_indices(Lt::Scene *scene, Lt::Circle *circle);
 
-struct Lt_Scanlines {
-    Stack *todo;
-    Stack *done;
-};
+    void stack_push(Lt::Stack *stack, void* element);
+    void *stack_pop(Lt::Stack *stack);
+    bool stack_empty(Lt::Stack *stack);
+    Lt::Stack *stack_create_empty(size_t elements, size_t elementsize);
+}

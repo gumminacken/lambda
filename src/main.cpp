@@ -1,9 +1,9 @@
 #include "lambda.h"
 
-Lt_Scanlines *create_scanlines() {
-    Lt_Scanlines *scanlines = (Lt_Scanlines *)SDL_malloc(sizeof(Lt_Scanlines));
-    scanlines->todo = stack_create_empty(HEIGHT, sizeof(Lt_Scanline));
-    scanlines->done = stack_create_empty(HEIGHT, sizeof(Lt_Scanline));
+Lt::Scanlines *create_scanlines() {
+    Lt::Scanlines *scanlines = (Lt::Scanlines *)SDL_malloc(sizeof(Lt::Scanlines));
+    scanlines->todo = Li::stack_create_empty(HEIGHT, sizeof(Lt::Scanline));
+    scanlines->done = Li::stack_create_empty(HEIGHT, sizeof(Lt::Scanline));
     return scanlines;
 }
 
@@ -12,36 +12,36 @@ SDL_mutex *rendermutex = SDL_CreateMutex();
 SDL_mutex *buffermutex = SDL_CreateMutex();
 
 // temp circle
-static const Lt_Scene scene = create_scene(1000, 16, 2.f, 20.f);
+static const Lt::Scene scene = Li::create_scene(1000, 16, 1.f, 3.f);
 
 static int thread_worker(void *data) {
-    Lt_Scanlines *scanlines = (Lt_Scanlines *)data;
-    Stack *scanlines_todo = scanlines->todo;
-    Stack *scanlines_done = scanlines->done;
+    Lt::Scanlines *scanlines = (Lt::Scanlines *)data;
+    Lt::Stack *scanlines_todo = scanlines->todo;
+    Lt::Stack *scanlines_done = scanlines->done;
 
     while (true) {
         SDL_LockMutex(rendermutex);
         // pop scanline from the stack
-        if (stack_empty(scanlines_todo)) {
+        if (Li::stack_empty(scanlines_todo)) {
             break;
         }
 
-        Lt_Scanline *scanline = (Lt_Scanline *)stack_pop(scanlines_todo);
+        Lt::Scanline *scanline = (Lt::Scanline *)Li::stack_pop(scanlines_todo);
 
         SDL_UnlockMutex(rendermutex);
 
         char *curr = scanline->pixels;
         for (int x = 0; x < scanline->width; ++x) {
-            Lt_Sample2D *samples = sample2D_random(x * scanline->y, SAMPLES);
+            Lt::Sample2D *samples = Lt::sample2D_random(x * scanline->y, SAMPLES);
             float r = 0;
             float g = 0;
             float b = 0;
             for (int i = 0; i < SAMPLES; ++i) {
-                Lt_Sample2D sample = Lt_Sample2D {
+                Lt::Sample2D sample = Lt::Sample2D {
                     (float)x + samples[i].x,
                     (float)scanline->y + samples[i].y
                 };
-                if (intersect(scene, sample)) {
+                if (Li::intersect(scene, sample)) {
                     r += (x / (float)scanline->width) * 255;
                     g += (scanline->y / (float)scanline->width) * 255;
                 }
@@ -57,7 +57,7 @@ static int thread_worker(void *data) {
 
         SDL_LockMutex(buffermutex);
         // write scanline data into buffer
-        stack_push(scanlines_done, scanline);
+        Li::stack_push(scanlines_done, scanline);
         SDL_UnlockMutex(buffermutex);
     }
     return 0;
@@ -78,19 +78,19 @@ int main(int argc, char* argv[]) {
     SDL_Surface *surface = SDL_GetWindowSurface(window);
 
     std::vector<SDL_Thread *> threads(NUMTHREADS);
-    Lt_Scanlines *scanlines = create_scanlines();
-    Stack *scanlines_todo = scanlines->todo;
-    Stack *scanlines_done = scanlines->done;
+    Lt::Scanlines *scanlines = create_scanlines();
+    Lt::Stack *scanlines_todo = scanlines->todo;
+    Lt::Stack *scanlines_done = scanlines->done;
 
     bool done = false;
 
-    Lt_Scanline *scanliness = (Lt_Scanline *)malloc(sizeof(Lt_Scanline) * HEIGHT);
+    Lt::Scanline *scanliness = (Lt::Scanline *)malloc(sizeof(Lt::Scanline) * HEIGHT);
 
     for (int y = HEIGHT-1; y >= 0; --y) {
-        Lt_Scanline *scanline = scanliness + y;
+        Lt::Scanline *scanline = scanliness + y;
         scanline->y = y;
         scanline->width = WIDTH;
-        stack_push(scanlines_todo, scanline);
+        Li::stack_push(scanlines_todo, scanline);
     }
 
     for (unsigned int t = 0; t < NUMTHREADS; ++t) {
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     }
 
     while (!done) {
-        if (stack_empty(scanlines_todo) && stack_empty(scanlines_done)) {
+        if (Li::stack_empty(scanlines_todo) && Li::stack_empty(scanlines_done)) {
             for (unsigned int t = 0; t < NUMTHREADS; ++t) {
                 if (threads[t] != NULL) {
                     SDL_DetachThread(threads[t]);
@@ -109,8 +109,8 @@ int main(int argc, char* argv[]) {
         }
 
         SDL_LockMutex(buffermutex);
-        while (!stack_empty(scanlines_done)) {
-            Lt_Scanline *scanline = (Lt_Scanline *)stack_pop(scanlines_done);
+        while (!Li::stack_empty(scanlines_done)) {
+            Lt::Scanline *scanline = (Lt::Scanline *)Li::stack_pop(scanlines_done);
             // write data in the pixel buffer
             SDL_memcpy((char *)surface->pixels + (surface->pitch * scanline->y), scanline->pixels, WIDTH * 4);
             // Update WindowSurface
