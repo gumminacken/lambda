@@ -1,7 +1,7 @@
 #include "lambda.h"
 
 
-Lt::Sample2D* Lt::sample2D_random(unsigned int seed, size_t elements) {
+Lt::Sample2D* Li::sample2D_random(unsigned int seed, size_t elements) {
     Lt::Sample2D *samples = (Lt::Sample2D *)SDL_malloc(sizeof(Lt::Sample2D) * elements);
     srand(seed);
     double fraction = 1.0 / RAND_MAX;

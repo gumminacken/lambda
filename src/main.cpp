@@ -12,7 +12,7 @@ SDL_mutex *rendermutex = SDL_CreateMutex();
 SDL_mutex *buffermutex = SDL_CreateMutex();
 
 // temp circle
-static const Lt::Scene scene = Li::create_scene(1000, 16, 1.f, 3.f);
+static const Lt::Scene scene = Li::scene_create(1000, 16, 1.f, 3.f);
 
 static int thread_worker(void *data) {
     Lt::Scanlines *scanlines = (Lt::Scanlines *)data;
@@ -32,7 +32,7 @@ static int thread_worker(void *data) {
 
         char *curr = scanline->pixels;
         for (int x = 0; x < scanline->width; ++x) {
-            Lt::Sample2D *samples = Lt::sample2D_random(x * scanline->y, SAMPLES);
+            Lt::Sample2D *samples = Li::sample2D_random(x * scanline->y, SAMPLES);
             float r = 0;
             float g = 0;
             float b = 0;

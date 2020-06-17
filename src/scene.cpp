@@ -53,7 +53,7 @@ int *Li::get_intersected_grid_indices(Lt::Scene *scene, Lt::Circle *circle) {
     return indices;
 }
 
-Lt::Scene Li::create_scene(size_t num_circles, size_t gridsize, float minsize, float maxsize) {
+Lt::Scene Li::scene_create(size_t num_circles, size_t gridsize, float minsize, float maxsize) {
     size_t num_grids = ((WIDTH / gridsize) + 1) * ((HEIGHT / gridsize) + 1);
 
     Lt::Scene scene = {
@@ -64,7 +64,7 @@ Lt::Scene Li::create_scene(size_t num_circles, size_t gridsize, float minsize, f
         (Lt::Grid *)malloc(sizeof(Lt::Grid) * num_grids)
     };
 
-    Lt::Sample2D *samples = Lt::sample2D_random(12345, num_circles);
+    Lt::Sample2D *samples = Li::sample2D_random(12345, num_circles);
 
     for (size_t i = 0; i < num_grids; ++i) {
         scene.grids[i].num_circles = 0;
