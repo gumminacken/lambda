@@ -23,5 +23,5 @@ Lt_Vec3f operator-(Lt_Vec3f a, Lt_Vec3f b) {
 }
 
 float Vec3f_length(Lt_Vec3f vector) {
-    return sqrtf32(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+    return sqrtf(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 }
