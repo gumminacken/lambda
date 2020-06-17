@@ -13,6 +13,7 @@ include_directories(
     ./thirdparty/stb
     ./thirdparty/embree-${EMBREE_FLAVOUR}/include/embree3
     ./thirdparty/sdl2-2.12/include
+    ./thirdparty/glm/glm
 )
 
 link_directories(
@@ -29,6 +30,7 @@ link_libraries(
 add_executable(lambda
   src/main.cpp
   src/math.cpp
+  src/renderer.cpp
   src/sampler.cpp
   src/scene.cpp
   src/stack.cpp
