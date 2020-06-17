@@ -8,6 +8,8 @@
 #include <thread>
 #include <vector>
 
+#include "glm.hpp"
+#include "rtcore.h"
 #include "SDL.h"
 
 const int WIDTH = 640;
