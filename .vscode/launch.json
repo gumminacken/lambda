@@ -32,7 +32,7 @@
             "name": "(vsdb) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/lambda",
+            "program": "${workspaceFolder}/build/Debug/lambda",
             "environment": [
                 {
                     "name": "PATH",

@@ -84,58 +84,91 @@ RTCScene initializeScene(RTCDevice device)
  * Cast a single ray with origin (ox, oy, oz) and direction
  * (dx, dy, dz).
  */
-void castRay(RTCScene scene,
-             float ox, float oy, float oz,
-             float dx, float dy, float dz)
-{
-  /*
-   * The intersect context can be used to set intersection
-   * filters or flags, and it also contains the instance ID stack
-   * used in multi-level instancing.
-   */
-  struct RTCIntersectContext context;
-  rtcInitIntersectContext(&context);
 
-  /*
-   * The ray hit structure holds both the ray and the hit.
-   * The user must initialize it properly -- see API documentation
-   * for rtcIntersect1() for details.
-   */
-  struct RTCRayHit rayhit;
-  rayhit.ray.org_x = ox;
-  rayhit.ray.org_y = oy;
-  rayhit.ray.org_z = oz;
-  rayhit.ray.dir_x = dx;
-  rayhit.ray.dir_y = dy;
-  rayhit.ray.dir_z = dz;
-  rayhit.ray.tnear = 0;
-  rayhit.ray.tfar = std::numeric_limits<float>::infinity();
-  rayhit.ray.mask = 0;
-  rayhit.ray.flags = 0;
-  rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
-  rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+Lt::Ray ray_create(Lt::Vec3f origin, Lt::Vec3f direction){
+    Lt::Ray ray = {
+        origin,
+        direction
+    };
 
-  /*
-   * There are multiple variants of rtcIntersect. This one
-   * intersects a single ray with the scene.
-   */
-  rtcIntersect1(scene, &context, &rayhit);
-
-  printf("%f, %f, %f: ", ox, oy, oz);
-  if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
-  {
-    /* Note how geomID and primID identify the geometry we just hit.
-     * We could use them here to interpolate geometry information,
-     * compute shading, etc.
-     * Since there is only a single triangle in this scene, we will
-     * get geomID=0 / primID=0 for all hits.
-     * There is also instID, used for instancing. See
-     * the instancing tutorials for more information */
-    printf("Found intersection on geometry %d, primitive %d at tfar=%f\n",
-           rayhit.hit.geomID,
-           rayhit.hit.primID,
-           rayhit.ray.tfar);
-  }
-  else
-    printf("Did not find any intersection.\n");
+    return ray;
 }
+
+bool ray_cast(RTCScene *scene, Lt::Ray ray){
+
+
+    struct RTCIntersectContext context;
+    rtcInitIntersectContext(&context);
+
+    struct RTCRayHit rayhit;
+    rayhit.ray.org_x = ray.origin.x;
+    rayhit.ray.org_y = ray.origin.y;
+    rayhit.ray.org_z = ray.origin.z;
+    rayhit.ray.dir_x = ray.direction.x;
+    rayhit.ray.dir_y = ray.direction.y;
+    rayhit.ray.dir_z = ray.direction.z;
+    rayhit.ray.tnear = 0;
+    rayhit.ray.tfar = FLT_MAX;
+    rayhit.ray.mask = 0;
+    rayhit.ray.flags = 0;
+    rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+    rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+
+}
+
+
+// void castRay(RTCScene scene,
+//              float ox, float oy, float oz,
+//              float dx, float dy, float dz)
+// {
+//   /*
+//    * The intersect context can be used to set intersection
+//    * filters or flags, and it also contains the instance ID stack
+//    * used in multi-level instancing.
+//    */
+//   struct RTCIntersectContext context;
+//   rtcInitIntersectContext(&context);
+
+//   /*
+//    * The ray hit structure holds both the ray and the hit.
+//    * The user must initialize it properly -- see API documentation
+//    * for rtcIntersect1() for details.
+//    */
+//   struct RTCRayHit rayhit;
+//   rayhit.ray.org_x = ox;
+//   rayhit.ray.org_y = oy;
+//   rayhit.ray.org_z = oz;
+//   rayhit.ray.dir_x = dx;
+//   rayhit.ray.dir_y = dy;
+//   rayhit.ray.dir_z = dz;
+//   rayhit.ray.tnear = 0;
+//   rayhit.ray.tfar = std::numeric_limits<float>::infinity();
+//   rayhit.ray.mask = 0;
+//   rayhit.ray.flags = 0;
+//   rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+//   rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+
+//   /*
+//    * There are multiple variants of rtcIntersect. This one
+//    * intersects a single ray with the scene.
+//    */
+//   rtcIntersect1(scene, &context, &rayhit);
+
+//   printf("%f, %f, %f: ", ox, oy, oz);
+//   if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
+//   {
+//     /* Note how geomID and primID identify the geometry we just hit.
+//      * We could use them here to interpolate geometry information,
+//      * compute shading, etc.
+//      * Since there is only a single triangle in this scene, we will
+//      * get geomID=0 / primID=0 for all hits.
+//      * There is also instID, used for instancing. See
+//      * the instancing tutorials for more information */
+//     printf("Found intersection on geometry %d, primitive %d at tfar=%f\n",
+//            rayhit.hit.geomID,
+//            rayhit.hit.primID,
+//            rayhit.ray.tfar);
+//   }
+//   else
+//     printf("Did not find any intersection.\n");
+// }

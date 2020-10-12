@@ -1,5 +1,6 @@
 #pragma once
 
+#include <float.h>
 #include <malloc.h>
 #include <math.h>
 #include <stdio.h>
@@ -25,14 +26,7 @@ namespace Lt {
     };
 
     // Math //
-    struct Vec3f {
-        float x;
-        float y;
-        float z;
-    };
-
-    Vec3f operator+(Vec3f a, Vec3f b);
-    Vec3f operator-(Vec3f a, Vec3f b);
+    typedef glm::vec3 Vec3f;
 
     // Scene //
     struct Circle {
@@ -78,6 +72,13 @@ namespace Lt {
         Stack *todo;
         Stack *done;
     };
+
+    // Renderer //
+    struct Ray {
+        Vec3f origin;
+        Vec3f direction;
+    };
+
 }
 
 
@@ -87,7 +88,6 @@ namespace Li {
 
     // Math //
     Lt::Vec3f Vec3f(float x, float y, float z);
-    float Vec3f_length(Lt::Vec3f vector);
 
     // Scene //
     Lt::Circle Circle(float radius, Lt::Vec3f center);
@@ -104,6 +104,10 @@ namespace Li {
     void *stack_pop(Lt::Stack *stack);
     bool stack_empty(Lt::Stack *stack);
     Lt::Stack *stack_create_empty(size_t elements, size_t elementsize);
+
+    // Renderer //
+    bool ray_cast(RTCScene *scene, Lt::Ray ray);
+    Lt::Ray ray_create(Lt::Vec3f origin , Lt::Vec3f direction);
 }
 
 void errorFunction(void* userPtr, enum RTCError error, const char* str);

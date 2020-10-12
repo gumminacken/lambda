@@ -65,9 +65,6 @@ static int thread_worker(void *data) {
 
 int main(int argc, char* argv[]) {
 
-    glm::vec3 v = {1, 2, 3};
-    printf("x: %g, y: %g, z: %g", v.x, v.y, v.z);
-
     initializeDevice();
     if (SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Something failed!");

@@ -9,7 +9,7 @@ Lt::Circle Li::Circle(float radius, Lt::Vec3f center) {
 
 bool Li::intersect(Lt::Circle *object, Lt::Sample2D sample) {
     Lt::Vec3f sample_vector = Li::Vec3f(sample.x, sample.y, 0);
-    return (Li::Vec3f_length(sample_vector - object->center) <= object->radius);
+    return (glm::length(sample_vector - object->center) <= object->radius);
 }
 
 bool Li::intersect(Lt::Scene scene, Lt::Sample2D sample) {
